@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人民的名义 - 性格测试</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #E74C3C;
+            --secondary: #3498DB;
+            --accent: #F39C12;
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --bg-dark: #1a1a2e;
+            --bg-card: #16213e;
+            --text-light: #eee;
+            --text-muted: #a0a0a0;
+        }
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            color: var(--text-light);
+            overflow-x: hidden;
+        }
+        .screen { display: none; min-height: 100vh; padding: 20px; }
+        .screen.active { display: flex; align-items: center; justify-content: center; }
+        .welcome-container { text-align: center; max-width: 500px; animation: fadeInUp 0.8s ease; }
+        .logo-badge { display: inline-block; background: var(--gradient-2); padding: 8px 20px; border-radius: 20px; font-size: 14px; font-weight: bold; margin-bottom: 20px; }
+        .main-title { font-size: 3rem; background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 10px; }
+        .subtitle { font-size: 1.5rem; color: var(--text-muted); margin-bottom: 30px; }
+        .intro-card { background: rgba(255,255,255,0.05); border-radius: 20px; padding: 30px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.1); }
+        .intro-card p { margin: 10px 0; line-height: 1.6; }
+        .highlight-text { color: var(--accent); font-weight: bold; }
+        .quiz-info { display: flex; justify-content: center; gap: 30px; margin-bottom: 30px; flex-wrap: wrap; }
+        .info-item { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .info-icon { font-size: 2rem; }
+        .tips { color: var(--text-muted); font-size: 14px; margin-top: 15px; }
+        .btn-primary { background: var(--gradient-2); border: none; padding: 15px 50px; font-size: 1.1rem; color: white; border-radius: 30px; cursor: pointer; transition: all 0.3s ease; font-weight: bold; }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(231, 76, 60, 0.4); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-secondary { background: transparent; border: 2px solid var(--secondary); padding: 12px 30px; font-size: 1rem; color: var(--secondary); border-radius: 30px; cursor: pointer; transition: all 0.3s ease; }
+        .btn-secondary:hover { background: var(--secondary); color: white; }
+        .btn-share { background: var(--gradient-3); border: none; padding: 15px 40px; font-size: 1rem; color: white; border-radius: 30px; cursor: pointer; transition: all 0.3s ease; font-weight: bold; }
+        .quiz-container { max-width: 600px; width: 100%; animation: fadeIn 0.5s ease; }
+        .progress-section { margin-bottom: 30px; }
+        .progress-bar { height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--gradient-2); border-radius: 10px; transition: width 0.5s ease; width: 0%; }
+        .progress-text { text-align: center; margin-top: 10px; color: var(--text-muted); }
+        .question-card { background: var(--bg-card); border-radius: 20px; padding: 30px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.1); }
+        .question-number { color: var(--accent); font-size: 14px; margin-bottom: 15px; }
+        .question-text { font-size: 1.3rem; line-height: 1.6; margin-bottom: 25px; }
+        .options-container { display: flex; flex-direction: column; gap: 12px; }
+        .option-item { background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 15px 20px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 15px; }
+        .option-item:hover { border-color: var(--primary); background: rgba(231, 76, 60, 0.1); }
+        .option-item.selected { border-color: var(--primary); background: rgba(231, 76, 60, 0.2); }
+        .option-letter { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        .option-item.selected .option-letter { background: var(--primary); }
+        .option-text { flex: 1; }
+        .nav-buttons { display: flex; justify-content: center; gap: 15px; }
+        .result-container { max-width: 600px; width: 100%; text-align: center; animation: fadeInUp 0.8s ease; }
+        .result-title { font-size: 1.5rem; color: var(--text-muted); margin-bottom: 30px; }
+        .main-result { background: var(--bg-card); border-radius: 20px; padding: 30px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.1); }
+        .character-portrait { font-size: 6rem; margin-bottom: 20px; animation: bounce 1s ease infinite; }
+        .character-name { font-size: 2.5rem; background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 10px; }
+        .character-title { font-size: 1.2rem; color: var(--accent); margin-bottom: 20px; }
+        .character-quote { font-style: italic; color: var(--text-muted); padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; border-left: 3px solid var(--primary); }
+        .traits-section, .analysis-section, .comparison-section { background: var(--bg-card); border-radius: 20px; padding: 25px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.1); }
+        .traits-section h3, .analysis-section h3, .comparison-section h3 { color: var(--accent); margin-bottom: 15px; font-size: 1.2rem; }
+        .chart-legend { display: flex; justify-content: center; gap: 25px; margin-bottom: 20px; font-size: 14px; color: var(--text-muted); }
+        .legend-item { display: flex; align-items: center; gap: 8px; }
+        .legend-bar { display: inline-block; width: 24px; height: 12px; border-radius: 6px; }
+        .legend-bar.user-bar { background: #FF69B4; opacity: 0.8; }
+        .legend-bar.char-bar { background: #3498DB; }
+        .char-name { color: var(--accent); font-weight: bold; }
+        .traits-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+        .trait-tag { background: var(--gradient-1); padding: 8px 18px; border-radius: 20px; font-size: 14px; }
+        .dim-bar-container { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .dim-label { width: 70px; text-align: right; font-size: 13px; color: var(--text-muted); }
+        .dim-bar-wrapper { flex: 1; height: 20px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; position: relative; }
+        .dim-bar { height: 100%; border-radius: 10px; transition: width 1s ease; }
+        .dim-bar.user-bar { background: #FF69B4; position: absolute; bottom: 0; left: 0; opacity: 0.8; }
+        .dim-bar.char-bar { background: #3498DB; position: absolute; top: 0; left: 0; }
+        .dim-value { width: 40px; text-align: left; font-size: 13px; font-weight: bold; }
+        .match-score { margin: 30px 0; }
+        .score-circle { width: 120px; height: 120px; border-radius: 50%; background: var(--gradient-1); display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 2.5rem; font-weight: bold; animation: scaleIn 0.5s ease; }
+        .match-score p { color: var(--text-muted); }
+        .result-footer { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .easter-egg-container { max-width: 500px; width: 100%; text-align: center; animation: fadeInUp 0.8s ease; }
+        .egg-badge { display: inline-block; background: var(--accent); color: #000; padding: 8px 20px; border-radius: 20px; font-size: 14px; font-weight: bold; margin-bottom: 20px; animation: bounce 0.5s ease infinite; }
+        .egg-title { font-size: 2.5rem; color: var(--accent); margin-bottom: 20px; }
+        .egg-avatar { font-size: 8rem; margin-bottom: 20px; animation: wiggle 0.5s ease infinite; }
+        .egg-name { font-size: 3rem; background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 10px; }
+        .egg-subtitle { color: var(--text-muted); font-size: 1.2rem; margin-bottom: 20px; }
+        .egg-quote { font-style: italic; color: var(--text-muted); padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 20px; border-left: 3px solid var(--accent); }
+        .egg-message { background: var(--bg-card); border-radius: 15px; padding: 25px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.1); }
+        .egg-message p { margin: 8px 0; }
+        .egg-message .highlight { color: var(--accent); font-size: 1.2rem; font-weight: bold; }
+        .easter-egg-traits { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-bottom: 30px; }
+        .easter-egg-traits .trait-tag { background: var(--accent); color: #000; }
+        .egg-footer { display: flex; justify-content: center; gap: 15px; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
+        @keyframes wiggle { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+        @media (max-width: 600px) {
+            .main-title { font-size: 2rem; }
+            .quiz-info { gap: 15px; }
+            .question-text { font-size: 1.1rem; }
+            .character-name { font-size: 2rem; }
+            .nav-buttons { flex-wrap: wrap; }
+            .result-footer, .egg-footer { flex-direction: column; align-items: center; }
+            .dim-label { width: 50px; font-size: 11px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 欢迎页 -->
+    <div id="welcome-screen" class="screen active">
+        <div class="welcome-container">
+            <div class="logo-badge">剧迷测试</div>
+            <h1 class="main-title">人民的名义</h1>
+            <p class="subtitle">性格测试</p>
+            <div class="intro-card">
+                <p>在汉东省的政治漩涡中，你更像哪位人物？</p>
+                <p class="highlight-text">正义凛然的检察官？运筹帷幄的省委书记？</p>
+                <p class="highlight-text">还是深藏不露的商业精英？</p>
+            </div>
+            <div class="quiz-info">
+                <div class="info-item"><span class="info-icon">📝</span><span>20道测试题</span></div>
+                <div class="info-item"><span class="info-icon">🎭</span><span>11位剧中人物</span></div>
+                <div class="info-item"><span class="info-icon">📊</span><span>8维度分析</span></div>
+            </div>
+            <button id="start-btn" class="btn-primary">开始测试</button>
+            <p class="tips">* 第20题是特殊彩蛋题哦~</p>
+        </div>
+    </div>
+
+    <!-- 答题页 -->
+    <div id="quiz-screen" class="screen">
+        <div class="quiz-container">
+            <div class="progress-section">
+                <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+                <div class="progress-text"><span id="current-question">1</span> / <span id="total-questions">20</span></div>
+            </div>
+            <div class="question-card">
+                <div class="question-number">第 <span id="q-num">1</span> 题</div>
+                <h2 id="question-text" class="question-text"></h2>
+                <div id="options-container" class="options-container"></div>
+            </div>
+            <div class="nav-buttons">
+                <button id="prev-btn" class="btn-secondary" disabled>上一题</button>
+                <button id="next-btn" class="btn-primary" disabled>下一题</button>
+                <button id="submit-btn" class="btn-primary" style="display: none;">查看结果</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 结果页 -->
+    <div id="result-screen" class="screen">
+        <div class="result-container">
+            <h2 class="result-title">你的性格匹配是...</h2>
+            <div class="main-result">
+                <div class="character-portrait" id="character-avatar"></div>
+                <div class="character-info">
+                    <div class="character-name" id="character-name"></div>
+                    <div class="character-title" id="character-title"></div>
+                    <div class="character-quote" id="character-quote"></div>
+                </div>
+            </div>
+            <div class="traits-section">
+                <h3>性格特征</h3>
+                <div id="character-traits" class="traits-list"></div>
+            </div>
+            <div class="analysis-section">
+                <h3>你的八维度分析</h3>
+                <div id="dimension-chart"></div>
+            </div>
+            <div class="comparison-section">
+                <h3>你与角色的维度对比</h3>
+                <div class="chart-legend">
+                    <span class="legend-item"><span class="legend-bar user-bar"></span> 你</span>
+                    <span class="legend-item"><span class="legend-bar char-bar"></span> <span class="char-name" id="legend-char-name"></span></span>
+                </div>
+                <div id="comparison-chart"></div>
+            </div>
+            <div class="match-score">
+                <div class="score-circle"><span id="match-percent">0</span>%</div>
+                <p>性格匹配度</p>
+            </div>
+            <div class="result-footer">
+                <button id="share-btn" class="btn-share">分享结果</button>
+                <button id="restart-btn" class="btn-secondary">重新测试</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 彩蛋页 -->
+    <div id="easter-egg-screen" class="screen">
+        <div class="easter-egg-container">
+            <div class="egg-badge">🎉 彩蛋解锁！</div>
+            <h1 class="egg-title">恭喜你！</h1>
+            <div class="egg-avatar">👨‍⚖️</div>
+            <div class="egg-name">陈清泉</div>
+            <div class="egg-subtitle">外语爱好者</div>
+            <div class="egg-quote">"学外语是提高自身素质的重要途径..."</div>
+            <div class="egg-message">
+                <p>你选择了第20题的标准答案：</p>
+                <p class="highlight">"爱学习，爱学外语"</p>
+                <p>因此你与陈清泉同志完美契合！</p>
+            </div>
+            <div class="easter-egg-traits">
+                <span class="trait-tag">外语MAX</span>
+                <span class="trait-tag">法律专家</span>
+                <span class="trait-tag">学无止境</span>
+            </div>
+            <div class="egg-footer">
+                <button id="egg-share-btn" class="btn-share">分享彩蛋</button>
+                <button id="egg-restart-btn" class="btn-secondary">重新挑战</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+// ===== 数据 =====
+// 8维度: 正义justice, 原则principle, 圆滑slickness, 野心ambition, 魄力boldness, 共情empathy, 风险risk, 外语foreign
+const questions = [
+    { id: 1, text: "朋友求你违规通融，你会？", options: [
+        { text: "严词拒绝，绝不破窗", scores: { justice: 5, principle: 5, slickness: -2, ambition: 0, boldness: 3, empathy: 1, risk: 0, foreign: 0 } },
+        { text: "婉拒，守规矩留情面", scores: { justice: 3, principle: 3, slickness: 3, ambition: 0, boldness: 1, empathy: 4, risk: 0, foreign: 0 } },
+        { text: "看风险，安全就帮", scores: { justice: 0, principle: -2, slickness: 4, ambition: 3, boldness: 2, empathy: 2, risk: 3, foreign: 0 } },
+        { text: "心软答应，事后恐慌", scores: { justice: -1, principle: -3, slickness: 0, ambition: 0, boldness: -2, empathy: 5, risk: 4, foreign: 0 } }
+    ]},
+    { id: 2, text: "工作遇强权阻挠，你会？", options: [
+        { text: "硬刚到底，查到底", scores: { justice: 5, principle: 5, slickness: -3, ambition: 2, boldness: 5, empathy: 0, risk: 5, foreign: 0 } },
+        { text: "稳扎稳打，迂回推进", scores: { justice: 3, principle: 4, slickness: 2, ambition: 1, boldness: 3, empathy: 2, risk: 1, foreign: 0 } },
+        { text: "权衡利弊，明哲保身", scores: { justice: 0, principle: 0, slickness: 5, ambition: 4, boldness: 4, empathy: -1, risk: 4, foreign: 0 } },
+        { text: "退缩避让，等待指示", scores: { justice: 1, principle: 1, slickness: 0, ambition: -2, boldness: -3, empathy: 3, risk: -1, foreign: 0 } }
+    ]},
+    { id: 3, text: "你对权力的核心认知？", options: [
+        { text: "为民服务，守护公平", scores: { justice: 5, principle: 5, slickness: -2, ambition: 0, boldness: 2, empathy: 4, risk: 0, foreign: 0 } },
+        { text: "履职尽责，干出实绩", scores: { justice: 4, principle: 4, slickness: 1, ambition: 3, boldness: 4, empathy: 1, risk: 2, foreign: 0 } },
+        { text: "资源筹码，掌控全局", scores: { justice: -2, principle: -3, slickness: 5, ambition: 5, boldness: 3, empathy: -2, risk: 5, foreign: 0 } },
+        { text: "安稳饭碗，不求有功", scores: { justice: 2, principle: 2, slickness: 0, ambition: -3, boldness: 0, empathy: 5, risk: -2, foreign: 0 } }
+    ]},
+    { id: 4, text: "面对巨额利益诱惑，你？", options: [
+        { text: "直接拒绝，绝不触碰", scores: { justice: 5, principle: 5, slickness: -3, ambition: -1, boldness: 2, empathy: 1, risk: 0, foreign: 0 } },
+        { text: "冷静甄别，非己不取", scores: { justice: 4, principle: 4, slickness: 1, ambition: 0, boldness: 1, empathy: 2, risk: 0, foreign: 0 } },
+        { text: "评估风险，可控就收", scores: { justice: -3, principle: -4, slickness: 4, ambition: 4, boldness: 3, empathy: -1, risk: 5, foreign: 0 } },
+        { text: "心动胆怯，不敢拒不敢要", scores: { justice: 0, principle: -1, slickness: 0, ambition: 1, boldness: -2, empathy: 4, risk: 3, foreign: 0 } }
+    ]},
+    { id: 5, text: "与人相处的核心风格？", options: [
+        { text: "刚正直白，不玩虚的", scores: { justice: 5, principle: 4, slickness: -4, ambition: 0, boldness: 3, empathy: 0, risk: 0, foreign: 0 } },
+        { text: "稳重得体，懂分寸", scores: { justice: 3, principle: 3, slickness: 3, ambition: 1, boldness: 2, empathy: 3, risk: 0, foreign: 0 } },
+        { text: "八面玲珑，善周旋", scores: { justice: -1, principle: -2, slickness: 5, ambition: 3, boldness: 1, empathy: 2, risk: 3, foreign: 0 } },
+        { text: "温和老实，怕冲突", scores: { justice: 2, principle: 1, slickness: 0, ambition: -2, boldness: -3, empathy: 5, risk: -1, foreign: 0 } }
+    ]},
+    { id: 6, text: "被恶意冤枉诋毁，你？", options: [
+        { text: "死磕自证，绝不低头", scores: { justice: 5, principle: 5, slickness: -2, ambition: 1, boldness: 5, empathy: 0, risk: 4, foreign: 0 } },
+        { text: "理性举证，从容化解", scores: { justice: 4, principle: 4, slickness: 2, ambition: 0, boldness: 3, empathy: 1, risk: 1, foreign: 0 } },
+        { text: "借力打力，扭转局势", scores: { justice: 0, principle: -1, slickness: 5, ambition: 3, boldness: 4, empathy: -1, risk: 4, foreign: 0 } },
+        { text: "委屈沉默，不知所措", scores: { justice: 1, principle: 0, slickness: 0, ambition: -1, boldness: -4, empathy: 5, risk: -1, foreign: 0 } }
+    ]},
+    { id: 7, text: "你人生最看重？", options: [
+        { text: "正义信仰，问心无愧", scores: { justice: 5, principle: 5, slickness: -3, ambition: 0, boldness: 2, empathy: 2, risk: 0, foreign: 0 } },
+        { text: "责任担当，家庭安稳", scores: { justice: 3, principle: 3, slickness: 1, ambition: 1, boldness: 3, empathy: 4, risk: 0, foreign: 0 } },
+        { text: "地位权势，人生掌控", scores: { justice: -2, principle: -3, slickness: 4, ambition: 5, boldness: 4, empathy: -2, risk: 5, foreign: 0 } },
+        { text: "平淡人情，小确幸", scores: { justice: 2, principle: 2, slickness: 0, ambition: -3, boldness: -1, empathy: 5, risk: -2, foreign: 0 } }
+    ]},
+    { id: 8, text: "目睹不公之事，你？", options: [
+        { text: "挺身而出，主持公道", scores: { justice: 5, principle: 5, slickness: -2, ambition: 0, boldness: 4, empathy: 3, risk: 3, foreign: 0 } },
+        { text: "理性发声，守住底线", scores: { justice: 4, principle: 4, slickness: 1, ambition: 0, boldness: 2, empathy: 2, risk: 1, foreign: 0 } },
+        { text: "置身事外，不沾是非", scores: { justice: -1, principle: -2, slickness: 4, ambition: 2, boldness: 0, empathy: 0, risk: 2, foreign: 0 } },
+        { text: "同情但不敢参与", scores: { justice: 2, principle: 1, slickness: 0, ambition: -1, boldness: -3, empathy: 5, risk: -1, foreign: 0 } }
+    ]},
+    { id: 9, text: "对待规则制度，你？", options: [
+        { text: "绝对遵守，不容践踏", scores: { justice: 5, principle: 5, slickness: -3, ambition: 0, boldness: 2, empathy: 0, risk: 0, foreign: 0 } },
+        { text: "遵守但灵活适配", scores: { justice: 4, principle: 3, slickness: 2, ambition: 1, boldness: 1, empathy: 2, risk: 0, foreign: 0 } },
+        { text: "利用规则，为己所用", scores: { justice: -2, principle: -3, slickness: 5, ambition: 4, boldness: 3, empathy: -1, risk: 4, foreign: 0 } },
+        { text: "跟着大流，不违规即可", scores: { justice: 2, principle: 2, slickness: 0, ambition: -2, boldness: -1, empathy: 3, risk: -1, foreign: 0 } }
+    ]},
+    { id: 10, text: "面对下属犯错，你？", options: [
+        { text: "依规严惩，绝不姑息", scores: { justice: 4, principle: 5, slickness: -2, ambition: 0, boldness: 3, empathy: 0, risk: 1, foreign: 0 } },
+        { text: "批评教育，改过即可", scores: { justice: 3, principle: 3, slickness: 1, ambition: 1, boldness: 2, empathy: 4, risk: 0, foreign: 0 } },
+        { text: "看人下菜，权衡利弊", scores: { justice: 0, principle: -1, slickness: 4, ambition: 3, boldness: 1, empathy: 1, risk: 3, foreign: 0 } },
+        { text: "心软包容，从轻处理", scores: { justice: 1, principle: 1, slickness: 0, ambition: -1, boldness: -2, empathy: 5, risk: -1, foreign: 0 } }
+    ]},
+    { id: 11, text: "你对人脉社交的态度？", options: [
+        { text: "宁缺毋滥，只交知己", scores: { justice: 3, principle: 4, slickness: -1, ambition: 0, boldness: 1, empathy: 3, risk: 0, foreign: 0 } },
+        { text: "务实社交，有用则交", scores: { justice: 2, principle: 2, slickness: 3, ambition: 2, boldness: 1, empathy: 2, risk: 1, foreign: 0 } },
+        { text: "精心经营，人脉即资源", scores: { justice: -1, principle: -2, slickness: 5, ambition: 4, boldness: 2, empathy: 0, risk: 4, foreign: 0 } },
+        { text: "被动社交，怕麻烦", scores: { justice: 2, principle: 1, slickness: 0, ambition: -3, boldness: -2, empathy: 4, risk: -1, foreign: 0 } }
+    ]},
+    { id: 12, text: "遭遇人生低谷，你？", options: [
+        { text: "坚守初心，绝地反击", scores: { justice: 4, principle: 5, slickness: -1, ambition: 2, boldness: 5, empathy: 1, risk: 3, foreign: 0 } },
+        { text: "稳扎稳打，慢慢翻盘", scores: { justice: 3, principle: 3, slickness: 2, ambition: 1, boldness: 3, empathy: 2, risk: 1, foreign: 0 } },
+        { text: "不择手段，快速上位", scores: { justice: -3, principle: -4, slickness: 4, ambition: 5, boldness: 4, empathy: -2, risk: 5, foreign: 0 } },
+        { text: "认命躺平，安稳就好", scores: { justice: 1, principle: 1, slickness: 0, ambition: -3, boldness: -3, empathy: 3, risk: -2, foreign: 0 } }
+    ]},
+    { id: 13, text: "你做事的核心逻辑？", options: [
+        { text: "正义为先，不问得失", scores: { justice: 5, principle: 5, slickness: -2, ambition: 0, boldness: 3, empathy: 2, risk: 2, foreign: 0 } },
+        { text: "结果为先，兼顾规矩", scores: { justice: 3, principle: 4, slickness: 1, ambition: 3, boldness: 4, empathy: 0, risk: 1, foreign: 0 } },
+        { text: "利益为先，权衡利弊", scores: { justice: -2, principle: -3, slickness: 5, ambition: 5, boldness: 3, empathy: -1, risk: 4, foreign: 0 } },
+        { text: "安稳为先，不冒风险", scores: { justice: 2, principle: 2, slickness: 0, ambition: -2, boldness: -2, empathy: 5, risk: -1, foreign: 0 } }
+    ]},
+    { id: 14, text: "面对上级错误指令，你？", options: [
+        { text: "直言反驳，坚守正确", scores: { justice: 5, principle: 5, slickness: -3, ambition: 0, boldness: 4, empathy: 1, risk: 4, foreign: 0 } },
+        { text: "私下劝谏，委婉纠正", scores: { justice: 4, principle: 3, slickness: 3, ambition: 1, boldness: 2, empathy: 2, risk: 1, foreign: 0 } },
+        { text: "表面服从，私下变通", scores: { justice: 0, principle: -1, slickness: 4, ambition: 2, boldness: 1, empathy: 0, risk: 3, foreign: 0 } },
+        { text: "坚决执行，不敢质疑", scores: { justice: 1, principle: 1, slickness: 0, ambition: -1, boldness: -3, empathy: 3, risk: -1, foreign: 0 } }
+    ]},
+    { id: 15, text: "你对冒险的态度？", options: [
+        { text: "绝不冒险，守牢底线", scores: { justice: 4, principle: 5, slickness: -1, ambition: -1, boldness: 1, empathy: 2, risk: -1, foreign: 0 } },
+        { text: "可控冒险，追求突破", scores: { justice: 3, principle: 3, slickness: 2, ambition: 3, boldness: 3, empathy: 1, risk: 2, foreign: 0 } },
+        { text: "偏爱冒险，高风险高回报", scores: { justice: -3, principle: -4, slickness: 3, ambition: 5, boldness: 5, empathy: -2, risk: 5, foreign: 0 } },
+        { text: "惧怕冒险，只求安稳", scores: { justice: 2, principle: 2, slickness: 0, ambition: -3, boldness: -4, empathy: 4, risk: -2, foreign: 0 } }
+    ]},
+    { id: 16, text: "你对亲情友情的态度？", options: [
+        { text: "重情但绝不徇私", scores: { justice: 5, principle: 4, slickness: -1, ambition: 0, boldness: 2, empathy: 4, risk: 0, foreign: 0 } },
+        { text: "重情，合理范围内帮衬", scores: { justice: 3, principle: 3, slickness: 2, ambition: 1, boldness: 1, empathy: 5, risk: 1, foreign: 0 } },
+        { text: "亲情友情可做筹码", scores: { justice: -2, principle: -3, slickness: 4, ambition: 4, boldness: 2, empathy: -1, risk: 4, foreign: 0 } },
+        { text: "极度重情，易被裹挟", scores: { justice: 1, principle: 1, slickness: 0, ambition: -2, boldness: -2, empathy: 5, risk: 3, foreign: 0 } }
+    ]},
+    { id: 17, text: "你给他人的核心印象？", options: [
+        { text: "刚正不阿，令人敬畏", scores: { justice: 5, principle: 4, slickness: -3, ambition: 0, boldness: 3, empathy: 0, risk: 1, foreign: 0 } },
+        { text: "沉稳靠谱，值得信赖", scores: { justice: 3, principle: 3, slickness: 3, ambition: 2, boldness: 2, empathy: 3, risk: 0, foreign: 0 } },
+        { text: "深不可测，精明难测", scores: { justice: -1, principle: -2, slickness: 5, ambition: 4, boldness: 3, empathy: -1, risk: 4, foreign: 0 } },
+        { text: "温和善良，毫无心机", scores: { justice: 2, principle: 1, slickness: 0, ambition: -3, boldness: -3, empathy: 5, risk: -1, foreign: 0 } }
+    ]},
+    { id: 18, text: "你对未来的追求？", options: [
+        { text: "守护正义，无愧于心", scores: { justice: 5, principle: 5, slickness: -2, ambition: 0, boldness: 2, empathy: 3, risk: 0, foreign: 0 } },
+        { text: "事业有成，家庭安稳", scores: { justice: 3, principle: 4, slickness: 1, ambition: 3, boldness: 3, empathy: 2, risk: 1, foreign: 0 } },
+        { text: "登顶权势，掌控一切", scores: { justice: -2, principle: -3, slickness: 4, ambition: 5, boldness: 4, empathy: -2, risk: 5, foreign: 0 } },
+        { text: "平淡度日，无忧无虑", scores: { justice: 2, principle: 2, slickness: 0, ambition: -3, boldness: -1, empathy: 5, risk: -2, foreign: 0 } }
+    ]},
+    { id: 19, text: "发现身边人违法乱纪，你？", options: [
+        { text: "坚决举报，大义灭亲", scores: { justice: 5, principle: 5, slickness: -3, ambition: 0, boldness: 4, empathy: 0, risk: 5, foreign: 0 } },
+        { text: "规劝无果，依规处理", scores: { justice: 4, principle: 4, slickness: 1, ambition: 1, boldness: 2, empathy: 2, risk: 2, foreign: 0 } },
+        { text: "隐瞒包庇，保全关系", scores: { justice: -3, principle: -4, slickness: 3, ambition: 3, boldness: 1, empathy: 3, risk: 4, foreign: 0 } },
+        { text: "视而不见，怕惹麻烦", scores: { justice: 1, principle: 1, slickness: 0, ambition: -2, boldness: -3, empathy: 4, risk: -1, foreign: 0 } }
+    ]},
+    { id: 20, text: "你爱学外语吗？", isEasterEgg: true, options: [
+        { text: "是！", scores: { foreign: 100 } },
+        { text: "否", scores: { foreign: 0 } }
+    ]}
+];
+
+const characterProfiles = {
+    houLiangping: { name: "侯亮平", title: "反腐先锋", avatar: "🕵️‍♂️", color: "#E74C3C", standardScores: { justice: 90, principle: 90, slickness: -20, ambition: 10, boldness: 80, empathy: 30, risk: 30, foreign: 0 }, traits: ["正义感爆棚", "不畏强权", "行动力强", "理想主义者"], quote: "我们人民检察官，就是要还老百姓一个公道！" },
+    liDakang: { name: "李达康", title: "改革闯将", avatar: "💼", color: "#3498DB", standardScores: { justice: 70, principle: 80, slickness: 20, ambition: 60, boldness: 75, empathy: 20, risk: 20, foreign: 0 }, traits: ["魄力十足", "追求政绩", "强势霸道", "工作狂人"], quote: "宁要绿水青山，不要金山银山！" },
+    gaoYuliang: { name: "高育良", title: "政坛老手", avatar: "🎭", color: "#9B59B6", standardScores: { justice: 30, principle: 40, slickness: 90, ambition: 70, boldness: 60, empathy: 10, risk: 60, foreign: 0 }, traits: ["城府极深", "老谋深算", "儒雅学者", "善用权术"], quote: "中国的政治，就是uhn...一种微妙的关系。" },
+    gaoXiaoqin: { name: "高小琴", title: "商海精英", avatar: "👩‍💼", color: "#E91E63", standardScores: { justice: 10, principle: 20, slickness: 95, ambition: 80, boldness: 75, empathy: 0, risk: 80, foreign: 0 }, traits: ["精明强干", "果断狠辣", "魅力四射", "白手起家"], quote: "在这个世界上，没有永远的朋友，只有永远的利益。" },
+    zhengXipo: { name: "郑西坡", title: "正义工匠", avatar: "👴", color: "#795548", standardScores: { justice: 60, principle: 50, slickness: 0, ambition: -30, boldness: -20, empathy: 90, risk: -10, foreign: 0 }, traits: ["坚持正义", "重情重义", "手艺精湛", "老黄牛精神"], quote: "做人不能忘本，做事不能违法。" },
+    qiTongwei: { name: "祁同伟", title: "野心政治家", avatar: "🎖️", color: "#607D8B", standardScores: { justice: 20, principle: 30, slickness: 85, ambition: 90, boldness: 70, empathy: 15, risk: 75, foreign: 0 }, traits: ["野心勃勃", "不择手段", "出身草根", "悲剧英雄"], quote: "英雄在权力面前，只是工具而已。" },
+    jiChangming: { name: "季昌明", title: "老练政客", avatar: "🧓", color: "#8D6E63", standardScores: { justice: 50, principle: 60, slickness: 70, ambition: 40, boldness: 50, empathy: 25, risk: 35, foreign: 0 }, traits: ["圆滑老道", "深谙规则", "低调务实", "明哲保身"], quote: "官场之道，在于进退有度。" },
+    shaRuijin: { name: "沙瑞金", title: "空降书记", avatar: "📜", color: "#1565C0", standardScores: { justice: 80, principle: 85, slickness: 60, ambition: 50, boldness: 85, empathy: 35, risk: 25, foreign: 0 }, traits: ["高瞻远瞩", "铁腕治吏", "背景深厚", "反腐旗手"], quote: "腐败分子发现一个，就要清除一个。" },
+    zhaoRuilong: { name: "赵瑞龙", title: "衙内公子", avatar: "🕴️", color: "#FF5722", standardScores: { justice: 0, principle: 10, slickness: 50, ambition: 95, boldness: 65, empathy: 0, risk: 90, foreign: 0 }, traits: ["仗势欺人", "胆大妄为", "挥金如土", "狂妄自大"], quote: "我爸是李刚...不对我爸比李刚牛多了！" },
+    chenQingquan: { name: "陈清泉", title: "外语爱好者", avatar: "👨‍⚖️", color: "#4CAF50", standardScores: { justice: 0, principle: 10, slickness: 30, ambition: 20, boldness: 10, empathy: 5, risk: 85, foreign: 100 }, traits: ["爱学外语", "法律专家", "学无止境", "双面人生"], quote: "学外语是提高自身素质的重要途径。" },
+    chenYanshi: { name: "陈岩石", title: "退休老革命", avatar: "🏅", color: "#F44336", standardScores: { justice: 95, principle: 95, slickness: -25, ambition: 0, boldness: 85, empathy: 80, risk: 35, foreign: 0 }, traits: ["刚正不阿", "不忘初心", "两袖清风", "人民公仆"], quote: "从群众中来，到群众中去。" }
+};
+
+const dimensions = [
+    { key: 'justice', name: '正义度', color: '#E74C3C' },
+    { key: 'principle', name: '原则度', color: '#3498DB' },
+    { key: 'slickness', name: '圆滑度', color: '#9B59B6' },
+    { key: 'ambition', name: '野心度', color: '#E91E63' },
+    { key: 'boldness', name: '魄力度', color: '#FF9800' },
+    { key: 'empathy', name: '共情度', color: '#4CAF50' },
+    { key: 'risk', name: '风险度', color: '#F44336' },
+    { key: 'foreign', name: '外语度', color: '#00BCD4' }
+];
+
+// ===== 引擎 =====
+const QuizEngine = {
+    userAnswers: {},
+    // 计算每个维度在前19题中是否有区分度（不同选项分数不同）
+    getTestedDimensions() {
+        const tested = {};
+        dimensions.forEach(d => tested[d.key] = false);
+        questions.slice(0, 19).forEach(q => {
+            const dimValues = {};
+            q.options.forEach(opt => {
+                if (opt.scores) {
+                    Object.keys(opt.scores).forEach(dim => {
+                        if (!dimValues[dim]) dimValues[dim] = new Set();
+                        dimValues[dim].add(opt.scores[dim]);
+                    });
+                }
+            });
+            // 只有当某维度有不同分数值时才标记为已测试
+            Object.keys(dimValues).forEach(dim => {
+                if (dimValues[dim].size > 1 && tested.hasOwnProperty(dim)) {
+                    tested[dim] = true;
+                }
+            });
+        });
+        return tested;
+    },
+    // 计算用户各维度得分（累加19道题的分值）
+    calculateUserScores() {
+        const userScores = { justice: 0, principle: 0, slickness: 0, ambition: 0, boldness: 0, empathy: 0, risk: 0, foreign: 0 };
+        const testedDims = this.getTestedDimensions();
+        // 只计算前19题（第20题是彩蛋题，不计入正常分数）
+        questions.slice(0, 19).forEach(q => {
+            const ans = this.userAnswers[q.id];
+            if (ans && ans.scores) {
+                Object.keys(ans.scores).forEach(dim => {
+                    if (userScores.hasOwnProperty(dim)) {
+                        userScores[dim] += ans.scores[dim];
+                    }
+                });
+            }
+        });
+        // 分数范围归一化到0-100
+        Object.keys(userScores).forEach(dim => {
+            if (testedDims[dim]) {
+                // 该维度被测试过，正常归一化
+                userScores[dim] = Math.max(0, Math.min(100, Math.round((userScores[dim] + 100) * 0.5)));
+            } else {
+                // 该维度没有被任何题目有效测试，强制为0
+                userScores[dim] = 0;
+            }
+        });
+        return userScores;
+    },
+    euclideanDistance(userScores, charScores) {
+        let dist = 0;
+        dimensions.forEach(d => {
+            const diff = (userScores[d.key] || 0) - (charScores[d.key] || 0);
+            dist += diff * diff;
+        });
+        return Math.sqrt(dist);
+    },
+    calculateSimilarity(distance) {
+        // 最大距离约为 sqrt(8 * 100^2) ≈ 283
+        const maxDistance = 283;
+        return Math.max(0, Math.round((1 - distance / maxDistance) * 100));
+    },
+    checkEasterEgg() {
+        const ans20 = this.userAnswers[20];
+        return ans20 && ans20.scores && ans20.scores.foreign >= 50; // 选"是"
+    },
+    findBestMatch() {
+        if (this.checkEasterEgg()) {
+            return { isEasterEgg: true, character: characterProfiles.chenQingquan };
+        }
+        const userScores = this.calculateUserScores();
+        const candidates = Object.entries(characterProfiles).filter(([k]) => k !== 'chenQingquan');
+        let best = null, minDist = Infinity, dimComp = {};
+        candidates.forEach(([key, profile]) => {
+            const dist = this.euclideanDistance(userScores, profile.standardScores);
+            dimComp[key] = { user: userScores, character: profile.standardScores, distance: dist };
+            if (dist < minDist) { minDist = dist; best = { key, character: profile, distance: dist }; }
+        });
+        return { isEasterEgg: false, character: best.character, similarity: this.calculateSimilarity(minDist), dimensionComparison: dimComp[best.key] };
+    },
+    getDimensionComparison(result) {
+        if (result.isEasterEgg) return null;
+        const comp = result.dimensionComparison;
+        return dimensions.map(d => ({ name: d.name, color: d.color, userScore: comp.user[d.key] || 0, charScore: comp.character[d.key] || 0 }));
+    },
+    reset() { this.userAnswers = {}; }
+};
+
+// ===== 图表 =====
+function renderAnalysisChart(containerId, userScores) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    dimensions.forEach(d => {
+        container.innerHTML += `<div class="dim-bar-container"><span class="dim-label">${d.name}</span><div class="dim-bar-wrapper"><div class="dim-bar" style="width:${userScores[d.key] || 0}%;background:${d.color};"></div></div><span class="dim-value" style="color:${d.color};">${userScores[d.key] || 0}</span></div>`;
+    });
+}
+
+function renderComparisonChart(containerId, data) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    if (!data) { container.innerHTML = '<p style="color:var(--text-muted);">彩蛋角色无需对比~</p>'; return; }
+    data.forEach(d => {
+        container.innerHTML += `<div class="dim-bar-container"><span class="dim-label">${d.name}</span><div class="dim-bar-wrapper"><div class="dim-bar user-bar" style="width:${d.userScore}%;"></div><div class="dim-bar char-bar" style="width:${d.charScore}%;"></div></div><span class="dim-value">${d.userScore}/${d.charScore}</span></div>`;
+    });
+}
+
+function animateNumber(el, target, duration = 1000) {
+    const start = performance.now();
+    const animate = (time) => {
+        const progress = Math.min((time - start) / duration, 1);
+        const ease = 1 - Math.pow(1 - progress, 2);
+        el.textContent = Math.round(start + (target - start) * ease);
+        if (progress < 1) requestAnimationFrame(animate);
+    };
+    requestAnimationFrame(animate);
+}
+
+// ===== 应用 =====
+const QuizApp = {
+    currentQuestion: 0,
+    init() {
+        document.getElementById('start-btn').onclick = () => this.startQuiz();
+        document.getElementById('prev-btn').onclick = () => this.prevQuestion();
+        document.getElementById('next-btn').onclick = () => this.nextQuestion();
+        document.getElementById('submit-btn').onclick = () => this.submitQuiz();
+        document.getElementById('share-btn').onclick = () => this.shareResult();
+        document.getElementById('restart-btn').onclick = () => this.restart();
+        document.getElementById('egg-share-btn').onclick = () => this.shareEasterEgg();
+        document.getElementById('egg-restart-btn').onclick = () => this.restart();
+        document.getElementById('total-questions').textContent = questions.length;
+    },
+    switchScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    },
+    startQuiz() {
+        QuizEngine.reset();
+        this.currentQuestion = 0;
+        this.renderQuestion();
+        this.switchScreen('quiz-screen');
+    },
+    renderQuestion() {
+        const q = questions[this.currentQuestion];
+        document.getElementById('current-question').textContent = this.currentQuestion + 1;
+        document.getElementById('q-num').textContent = this.currentQuestion + 1;
+        document.getElementById('progress-fill').style.width = (this.currentQuestion / questions.length * 100) + '%';
+        document.getElementById('question-text').textContent = q.text;
+        const optsContainer = document.getElementById('options-container');
+        optsContainer.innerHTML = '';
+        const letters = ['A', 'B', 'C', 'D'];
+        q.options.forEach((opt, i) => {
+            const div = document.createElement('div');
+            div.className = 'option-item' + (QuizEngine.userAnswers[q.id] && QuizEngine.userAnswers[q.id].text === opt.text ? ' selected' : '');
+            div.innerHTML = `<span class="option-letter">${letters[i]}</span><span class="option-text">${opt.text}</span>`;
+            div.onclick = () => this.selectOption(q.id, opt, div);
+            optsContainer.appendChild(div);
+        });
+        document.getElementById('prev-btn').disabled = this.currentQuestion === 0;
+        const nextBtn = document.getElementById('next-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        if (this.currentQuestion === questions.length - 1) {
+            nextBtn.style.display = 'none';
+            submitBtn.style.display = 'inline-block';
+        } else {
+            nextBtn.style.display = 'inline-block';
+            submitBtn.style.display = 'none';
+        }
+        nextBtn.disabled = !QuizEngine.userAnswers[q.id];
+        submitBtn.disabled = !QuizEngine.userAnswers[q.id];
+    },
+    selectOption(qId, opt, el) {
+        QuizEngine.userAnswers[qId] = opt;
+        document.querySelectorAll('.option-item').forEach(e => e.classList.remove('selected'));
+        el.classList.add('selected');
+        if (this.currentQuestion === questions.length - 1) {
+            document.getElementById('submit-btn').disabled = false;
+        } else {
+            document.getElementById('next-btn').disabled = false;
+        }
+    },
+    prevQuestion() { if (this.currentQuestion > 0) { this.currentQuestion--; this.renderQuestion(); } },
+    nextQuestion() { if (this.currentQuestion < questions.length - 1) { this.currentQuestion++; this.renderQuestion(); } },
+    submitQuiz() {
+        const result = QuizEngine.findBestMatch();
+        if (result.isEasterEgg) this.showEasterEgg();
+        else this.showResult(result);
+    },
+    showEasterEgg() { this.switchScreen('easter-egg-screen'); },
+    showResult(result) {
+        const { character, similarity } = result;
+        document.getElementById('character-avatar').textContent = character.avatar;
+        document.getElementById('character-name').textContent = character.name;
+        document.getElementById('character-title').textContent = character.title;
+        document.getElementById('character-quote').textContent = `"${character.quote}"`;
+        document.getElementById('legend-char-name').textContent = character.name;
+        const traitsContainer = document.getElementById('character-traits');
+        traitsContainer.innerHTML = '';
+        character.traits.forEach(t => { const span = document.createElement('span'); span.className = 'trait-tag'; span.textContent = t; traitsContainer.appendChild(span); });
+        renderAnalysisChart('dimension-chart', QuizEngine.calculateUserScores());
+        renderComparisonChart('comparison-chart', QuizEngine.getDimensionComparison(result));
+        this.switchScreen('result-screen');
+        setTimeout(() => animateNumber(document.getElementById('match-percent'), similarity, 1500), 100);
+    },
+    shareResult() {
+        const char = QuizEngine.findBestMatch().character;
+        const text = `我在"人民的名义性格测试"中，最像 ${char.name}！\n${char.title} - "${char.quote}"\n\n#人民的名义 #性格测试`;
+        if (navigator.share) navigator.share({ title: '人民的名义性格测试', text }).catch(() => this.copy(text));
+        else this.copy(text);
+    },
+    shareEasterEgg() {
+        const text = `我在"人民的名义性格测试"中解锁了隐藏彩蛋——陈清泉！\n"学外语是提高自身素质的重要途径..."\n\n#人民的名义 #隐藏角色 #陈清泉`;
+        if (navigator.share) navigator.share({ title: '彩蛋', text }).catch(() => this.copy(text));
+        else this.copy(text);
+    },
+    copy(text) { navigator.clipboard.writeText(text).then(() => alert('结果已复制！快去分享吧~')).catch(() => alert('复制失败，请手动复制~')); },
+    restart() { QuizEngine.reset(); this.currentQuestion = 0; this.switchScreen('welcome-screen'); }
+};
+
+document.addEventListener('DOMContentLoaded', () => QuizApp.init());
+</script>
+</body>
+</html>
